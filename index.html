@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>App Financeiro Moçambique</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f9f9;
+    margin: 0; padding: 20px;
+    color: #222;
+  }
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+  }
+  #app {
+    max-width: 600px;
+    margin: auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 30px 40px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  }
+  label {
+    display: block;
+    margin: 15px 0 5px;
+    font-weight: 600;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    background: #3498db;
+    color: white;
+    font-size: 1.1rem;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #2980b9;
+  }
+  #result {
+    margin-top: 25px;
+    white-space: pre-wrap;
+    background: #ecf0f1;
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 100px;
+    font-size: 1rem;
+    color: #34495e;
+  }
+  .input-group {
+    display: none;
+  }
+  .input-group.active {
+    display: block;
+  }
+  .note {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <h1>RendaFácil</h1>
+
+  <label for="operation">Escolha a operação:</label>
+  <select id="operation">
+    <option value="" disabled selected>-- Selecione --</option>
+    <option value="jurosCompostos">Juros Compostos / Poupança</option>
+    <option value="orcamento">Orçamento Mensal</option>
+    <option value="pontoEquilibrio">Ponto de Equilíbrio</option>
+    <option value="margemLucro">Margem de Lucro</option>
+    <option value="creditoBancario">Simulação Crédito Bancário</option>
+    <option value="maximizarLucro">Maximizar Lucro</option>
+    <option value="minimizarCustos">Minimizar Custos</option>
+    <option value="rentabilidade">Análise de Rentabilidade</option>
+    <option value="inflacao">Calculadora de Inflação</option>
+    <option value="fundoEmergencia">Fundo de Emergência</option>
+  </select>
+
+  <div class="input-group" id="inputs-jurosCompostos">
+    <label for="deposito">Depósito mensal (MT):</label>
+    <input type="number" id="deposito" min="0" step="any" />
+
+    <label for="taxa">Taxa anual de juros (%) (ex: 10):</label>
+    <input type="number" id="taxa" min="0" step="any" />
+
+    <label for="tempo">Tempo (anos):</label>
+    <input type="number" id="tempo" min="0" step="any" />
+  </div>
+
+  <div class="input-group" id="inputs-orcamento">
+    <label for="renda">Renda mensal (MT):</label>
+    <input type="number" id="renda" min="0" step="any" />
+
+    <label for="despesasFixas">Despesas fixas (MT):</label>
+    <input type="number" id="despesasFixas" min="0" step="any" />
+
+    <label for="despesasVariaveis">Despesas variáveis (MT):</label>
+    <input type="number" id="despesasVariaveis" min="0" step="any" />
+  </div>
+
+  <div class="input-group" id="inputs-pontoEquilibrio">
+    <label for="custosFixos">Custos fixos mensais (MT):</label>
+    <input type="number" id="custosFixos" min="0" step="any" />
+
+    <label for="precoVenda">Preço de venda por unidade (MT):</label>
+    <input type="number" id="precoVenda" min="0" step="any" />
+
+    <label for="custoVariavel">Custo variável por unidade (MT):</label>
+    <input type="number" id="custoVariavel" min="0" step="any" />
+  </div>
+
+  <div class="input-group" id="inputs-margemLucro">
+    <label for="precoVendaMargem">Preço de venda (MT):</label>
+    <input type="number" id="precoVendaMargem" min="0" step="any" />
+
+    <label for="custoMargem">Custo (MT):</label>
+    <input type="number" id="custoMargem" min="0" step="any" />
+  </div>
+
+  <div class="input-group" id="inputs-creditoBancario">
+    <label for="creditoValor">Valor do crédito (MT):</label>
+    <input type="number" id="creditoValor" min="0" step="any" />
+
+    <label for="creditoTaxa">Taxa anual de juros (%) <span class="note">(ex: 25%)</span>:</label>
+    <input type="number" id="creditoTaxa" min="0" step="any" placeholder="25 (padrão)" />
+
+    <label for="creditoPrazo">Prazo (anos):</label>
+    <input type="number" id="creditoPrazo" min="0" step="any" />
+  </div>
+
+  <div class="input-group" id="inputs-maximizarLucro">
+    <p>Insira a receita e o custo para cada item/produto que deseja comparar:</p>
+    <div id="maximizarLucroItems">
+      <div class="item-input">
+        <label>Receita Item 1 (MT):</label>
+        <input type="number" class="receita-item" min="0" step="any" />
+        <label>Custo Item 1 (MT):</label>
+        <input type="number" class="custo-item" min="0" step="any" />
+      </div>
+    </div>
+    <button type="button" id="addMaximizarLucroItem">Adicionar Mais Item</button>
+  </div>
+
+  <div class="input-group" id="inputs-minimizarCustos">
+    <p>Insira o valor de cada despesa para identificar onde cortar:</p>
+    <div id="minimizarCustosItems">
+      <div class="item-input">
+        <label>Despesa 1 (MT):</label>
+        <input type="number" class="despesa-item" min="0" step="any" />
+      </div>
+    </div>
+    <button type="button" id="addMinimizarCustosItem">Adicionar Mais Despesa</button>
+  </div>
+
+
+  <div class="input-group" id="inputs-rentabilidade">
+    <label for="receita">Receita total (MT):</label>
+    <input type="number" id="receita" min="0" step="any" />
+
+    <label for="custoTotal">Custo total (MT):</label>
+    <input type="number" id="custoTotal" min="0" step="any" />
+
+    <label for="impostos">Impostos (%) <span class="note">(padrão 17% IVA)</span>:</label>
+    <input type="number" id="impostos" min="0" step="any" placeholder="17" />
+  </div>
+
+  <div class="input-group" id="inputs-inflacao">
+    <label for="valorOriginal">Valor original (MT):</label>
+    <input type="number" id="valorOriginal" min="0" step="any" />
+
+    <label for="anos">Anos:</label>
+    <input type="number" id="anos" min="0" step="any" />
+
+    <label for="taxaInflacao">Taxa anual de inflação (%) <span class="note">(ex: 6.5%)</span>:</label>
+    <input type="number" id="taxaInflacao" min="0" step="any" placeholder="6.5" />
+  </div>
+
+  <div class="input-group" id="inputs-fundoEmergencia">
+    <label for="rendaMensal">Renda mensal (MT):</label>
+    <input type="number" id="rendaMensal" min="0" step="any" />
+
+    <label for="mesesReserva">Meses de reserva <span class="note">(padrão 6 meses)</span>:</label>
+    <input type="number" id="mesesReserva" min="1" step="1" placeholder="6" />
+  </div>
+
+  <button id="calculate">Calcular</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+  const operationSelect = document.getElementById('operation');
+  const inputGroups = document.querySelectorAll('.input-group');
+  const resultDiv = document.getElementById('result');
+
+  operationSelect.addEventListener('change', () => {
+    resultDiv.textContent = '';
+    inputGroups.forEach(group => group.classList.remove('active'));
+    const op = operationSelect.value;
+    const group = document.getElementById('inputs-' + op);
+    if(group) group.classList.add('active');
+  });
+
+  // Modified getValue to handle empty inputs as 0
+  function getValue(id) {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const val = parseFloat(el.value);
+    // If the input is empty or not a number, treat it as 0.
+    // We only throw an error if the value is explicitly negative, as per original logic.
+    if (el.value === '' || isNaN(val)) {
+      return 0;
+    }
+    if (val < 0) {
+      alert(`Por favor, insira um valor válido para "${el.previousElementSibling.textContent}"`);
+      throw 'Valor inválido';
+    }
+    return val;
+  }
+
+  // New function to get values from multiple dynamic inputs (e.g., for Maximizar Lucro, Minimizar Custos)
+  function getDynamicValues(className) {
+      const elements = document.querySelectorAll(`.${className}`);
+      const values = [];
+      elements.forEach((el, index) => {
+          const val = parseFloat(el.value);
+          // If the input is empty or not a number, treat it as 0.
+          if (el.value === '' || isNaN(val)) {
+              values.push(0);
+          } else if (val < 0) {
+              alert(`Por favor, insira um valor válido para a entrada do item ${index + 1}`);
+              throw 'Valor inválido';
+          } else {
+              values.push(val);
+          }
+      });
+      return values;
+  }
+
+  // --- Maximizar Lucro Dynamic Input Logic ---
+  let maximizarLucroItemCount = 1;
+  document.getElementById('addMaximizarLucroItem').addEventListener('click', () => {
+      maximizarLucroItemCount++;
+      const container = document.getElementById('maximizarLucroItems');
+      const newItemDiv = document.createElement('div');
+      newItemDiv.classList.add('item-input');
+      newItemDiv.innerHTML = `
+          <label>Receita Item ${maximizarLucroItemCount} (MT):</label>
+          <input type="number" class="receita-item" min="0" step="any" />
+          <label>Custo Item ${maximizarLucroItemCount} (MT):</label>
+          <input type="number" class="custo-item" min="0" step="any" />
+      `;
+      container.appendChild(newItemDiv);
+  });
+
+  // --- Minimizar Custos Dynamic Input Logic ---
+  let minimizarCustosItemCount = 1;
+  document.getElementById('addMinimizarCustosItem').addEventListener('click', () => {
+      minimizarCustosItemCount++;
+      const container = document.getElementById('minimizarCustosItems');
+      const newItemDiv = document.createElement('div');
+      newItemDiv.classList.add('item-input');
+      newItemDiv.innerHTML = `
+          <label>Despesa ${minimizarCustosItemCount} (MT):</label>
+          <input type="number" class="despesa-item" min="0" step="any" />
+      `;
+      container.appendChild(newItemDiv);
+  });
+
+
+  document.getElementById('calculate').addEventListener('click', () => {
+    resultDiv.textContent = '';
+    const op = operationSelect.value;
+    if (!op) {
+      alert('Por favor, selecione uma operação.');
+      return;
+    }
+
+    try {
+      if(op === 'jurosCompostos') {
+        const deposito = getValue('deposito');
+        const taxa = getValue('taxa') / 100;
+        const tempo = getValue('tempo');
+
+        const meses = tempo * 12;
+        // Check for division by zero if taxa is 0
+        const montante = taxa === 0 ? deposito * meses : deposito * ((Math.pow(1 + taxa / 12, meses) - 1) / (taxa / 12));
+
+        let interpretacao = `Este é o valor esperado acumulado após ${tempo} anos, considerando depósitos mensais e juros compostos.\n`;
+        interpretacao += montante < 10000 ? '🔴 O valor é baixo, considere aumentar depósitos ou tempo.\n' : '🟢 Valor bom para poupança.\n';
+        interpretacao += `💡 Quanto maior o tempo e o depósito, maior o montante acumulado devido ao efeito dos juros compostos.`;
+
+        resultDiv.textContent =
+          `Depósito mensal: ${deposito.toFixed(2)} MT\n` +
+          `Taxa anual: ${(taxa * 100).toFixed(2)}%\n` +
+          `Tempo: ${tempo.toFixed(2)} anos\n\n` +
+          `Montante acumulado estimado: ${montante.toFixed(2)} MT\n\n` +
+          interpretacao;
+      }
+      else if(op === 'orcamento') {
+        const renda = getValue('renda');
+        const despesasFixas = getValue('despesasFixas');
+        const despesasVariaveis = getValue('despesasVariaveis');
+
+        const despesasTotais = despesasFixas + despesasVariaveis;
+        const saldo = renda - despesasTotais;
+
+        let interpretacao = '';
+        if (saldo > 0) {
+          interpretacao = `🟢 Ótimo! Você está com saldo positivo de ${saldo.toFixed(2)} MT. Continue controlando seus gastos.`;
+        } else if (saldo === 0) {
+          interpretacao = `⚠️ Atenção! Seu orçamento está no zero, não há margem para imprevistos.`;
+        } else {
+          interpretacao = `🔴 Cuidado! Seu orçamento está negativo em ${Math.abs(saldo).toFixed(2)} MT. É necessário reduzir despesas ou aumentar renda.`;
+        }
+
+        resultDiv.textContent =
+          `Renda mensal: ${renda.toFixed(2)} MT\n` +
+          `Despesas fixas: ${despesasFixas.toFixed(2)} MT\n` +
+          `Despesas variáveis: ${despesasVariaveis.toFixed(2)} MT\n\n` +
+          `Despesas totais: ${despesasTotais.toFixed(2)} MT\n` +
+          `Saldo mensal: ${saldo.toFixed(2)} MT\n\n` +
+          interpretacao;
+      }
+      else if(op === 'pontoEquilibrio') {
+        const custosFixos = getValue('custosFixos');
+        const precoVenda = getValue('precoVenda');
+        const custoVariavel = getValue('custoVariavel');
+
+        if (precoVenda <= custoVariavel) {
+          alert('Preço de venda deve ser maior que custo variável para cálculo válido.');
+          return;
+        }
+
+        const pontoEquilibrio = custosFixos / (precoVenda - custoVariavel);
+
+        let interpretacao = `O ponto de equilíbrio indica o número mínimo de unidades a vender para cobrir os custos.\n`;
+        interpretacao += `Se vender menos que ${pontoEquilibrio.toFixed(2)} unidades, terá prejuízo.\n`;
+        interpretacao += `Venda acima deste ponto significa lucro.`;
+
+        resultDiv.textContent =
+          `Custos fixos: ${custosFixos.toFixed(2)} MT\n` +
+          `Preço de venda por unidade: ${precoVenda.toFixed(2)} MT\n` +
+          `Custo variável por unidade: ${custoVariavel.toFixed(2)} MT\n\n` +
+          `Ponto de equilíbrio: ${pontoEquilibrio.toFixed(2)} unidades\n\n` +
+          interpretacao;
+      }
+      else if(op === 'margemLucro') {
+        const precoVenda = getValue('precoVendaMargem');
+        const custo = getValue('custoMargem');
+
+        if (precoVenda === 0) {
+          alert('Preço de venda deve ser maior que zero.');
+          return;
+        }
+
+        const margemLucro = ((precoVenda - custo) / precoVenda) * 100;
+
+        let interpretacao = `A margem de lucro representa a porcentagem do preço que é lucro líquido.\n`;
+        if (margemLucro < 10) interpretacao += `🔴 Margem baixa. Avalie redução de custos ou aumento do preço.\n`;
+        else if (margemLucro < 30) interpretacao += `⚠️ Margem razoável, mas pode melhorar.\n`;
+        else interpretacao += `🟢 Margem saudável para o negócio.`;
+
+        resultDiv.textContent =
+          `Preço de venda: ${precoVenda.toFixed(2)} MT\n` +
+          `Custo: ${custo.toFixed(2)} MT\n\n` +
+          `Margem de lucro: ${margemLucro.toFixed(2)}%\n\n` +
+          interpretacao;
+      }
+      else if(op === 'creditoBancario') {
+        const valor = getValue('creditoValor');
+        let taxa = document.getElementById('creditoTaxa').value;
+        taxa = taxa === '' ? 25 : parseFloat(taxa); // padrão 25%
+        const prazo = getValue('creditoPrazo');
+
+        const taxaMensal = (taxa / 100) / 12;
+        const n = prazo * 12;
+
+        // Ensure n is not zero to avoid division by zero in Math.pow
+        if (n === 0) {
+          alert('O prazo deve ser maior que zero para simular o crédito.');
+          return;
+        }
+
+        // Formula da prestação (PMT) - Sistema francês
+        let prestacao;
+        if (taxaMensal === 0) { // Simple interest if rate is 0
+          prestacao = valor / n;
+        } else {
+          prestacao = (valor * taxaMensal) / (1 - Math.pow(1 + taxaMensal, -n));
+        }
+
+        const totalPago = prestacao * n;
+        const jurosPagos = totalPago - valor;
+
+        let interpretacao = `Taxa de juros considerada: ${taxa}% ao ano (padrão bancos moçambicanos).\n`;
+        interpretacao += `Prestação mensal estimada: ${prestacao.toFixed(2)} MT.\n`;
+        interpretacao += `Total pago após ${prazo} anos: ${totalPago.toFixed(2)} MT, sendo ${jurosPagos.toFixed(2)} MT de juros.\n`;
+        interpretacao += `💡 Antes de contrair crédito, avalie se a prestação cabe no seu orçamento para evitar endividamento.`;
+
+        resultDiv.textContent =
+          `Valor do crédito: ${valor.toFixed(2)} MT\n` +
+          `Prazo: ${prazo} anos\n\n` +
+          interpretacao;
+      }
+      else if(op === 'maximizarLucro') {
+          const receitas = getDynamicValues('receita-item');
+          const custos = getDynamicValues('custo-item');
+
+          let itemsInfo = '';
+          let maxProfit = -Infinity;
+          let maxProfitItemIndex = -1;
+
+          for (let i = 0; i < receitas.length; i++) {
+              const receita = receitas[i];
+              const custo = custos[i] || 0; // If cost input is missing, default to 0
+              const lucro = receita - custo;
+              itemsInfo += `Item ${i + 1}: Receita = ${receita.toFixed(2)} MT, Custo = ${custo.toFixed(2)} MT, Lucro = ${lucro.toFixed(2)} MT\n`;
+
+              if (lucro > maxProfit) {
+                  maxProfit = lucro;
+                  maxProfitItemIndex = i + 1;
+              }
+          }
+
+          let interpretacao = `Aqui está a análise de lucro para cada item inserido:\n\n${itemsInfo}\n`;
+          if (maxProfitItemIndex !== -1) {
+              interpretacao += `🟢 O Item ${maxProfitItemIndex} tem o lucro máximo de ${maxProfit.toFixed(2)} MT. Considere focar neste item.\n`;
+          } else {
+              interpretacao += `Nenhum lucro positivo encontrado ou nenhum item inserido.\n`;
+          }
+          interpretacao += `💡 Para maximizar o lucro, foque nos itens com maior margem e/ou maior volume de vendas.`;
+
+          resultDiv.textContent = interpretacao;
+      }
+      else if(op === 'minimizarCustos') {
+          const despesas = getDynamicValues('despesa-item');
+
+          let expensesInfo = '';
+          let totalExpenses = 0;
+          let highestExpense = -Infinity;
+          let highestExpenseIndex = -1;
+
+          despesas.forEach((despesa, index) => {
+              expensesInfo += `Despesa ${index + 1}: ${despesa.toFixed(2)} MT\n`;
+              totalExpenses += despesa;
+
+              if (despesa > highestExpense) {
+                  highestExpense = despesa;
+                  highestExpenseIndex = index + 1;
+              }
+          });
+
+          let interpretacao = `Aqui está a sua análise de despesas:\n\n${expensesInfo}\n`;
+          interpretacao += `Total de despesas: ${totalExpenses.toFixed(2)} MT\n\n`;
+
+          if (highestExpenseIndex !== -1 && highestExpense > 0) {
+              interpretacao += `🔴 A Despesa ${highestExpenseIndex} é a maior, com ${highestExpense.toFixed(2)} MT. Foque em reduzir esta despesa primeiro para maior impacto.\n`;
+          } else {
+              interpretacao += `Nenhuma despesa inserida ou todas as despesas são zero.\n`;
+          }
+          interpretacao += `💡 Para minimizar custos, identifique as maiores despesas e procure alternativas ou negocie melhores condições.`;
+
+          resultDiv.textContent = interpretacao;
+      }
+      else if(op === 'rentabilidade') {
+        const receita = getValue('receita');
+        const custoTotal = getValue('custoTotal');
+        let impostos = document.getElementById('impostos').value;
+        impostos = impostos === '' ? 17 : parseFloat(impostos); // padrão 17% IVA
+
+        const lucroBruto = receita - custoTotal;
+        const impostoPago = (impostos / 100) * receita;
+        const lucroLiquido = lucroBruto - impostoPago;
+        // Avoid division by zero if receita is 0
+        const margemLiquida = receita === 0 ? 0 : (lucroLiquido / receita) * 100;
+
+        let interpretacao = `Considerando impostos de ${impostos}% (IVA comum em Moçambique).\n`;
+        if (margemLiquida < 5) interpretacao += '🔴 Margem líquida muito baixa, negócio pouco rentável.\n';
+        else if (margemLiquida < 15) interpretacao += '⚠️ Margem aceitável, mas pode melhorar.\n';
+        else interpretacao += '🟢 Negócio rentável e saudável.\n';
+        interpretacao += '💡 Avalie custos e impostos para otimizar a rentabilidade.';
+
+        resultDiv.textContent =
+          `Receita total: ${receita.toFixed(2)} MT\n` +
+          `Custo total: ${custoTotal.toFixed(2)} MT\n` +
+          `Impostos pagos: ${impostoPago.toFixed(2)} MT\n\n` +
+          `Lucro líquido estimado: ${lucroLiquido.toFixed(2)} MT\n` +
+          `Margem líquida: ${margemLiquida.toFixed(2)}%\n\n` +
+          interpretacao;
+      }
+      else if(op === 'inflacao') {
+        const valorOriginal = getValue('valorOriginal');
+        const anos = getValue('anos');
+        let taxaInflacao = document.getElementById('taxaInflacao').value;
+        taxaInflacao = taxaInflacao === '' ? 6.5 : parseFloat(taxaInflacao); // média inflação Moçambique
+
+        // Valor corrigido pela inflação:
+        const valorCorrigido = valorOriginal * Math.pow(1 + (taxaInflacao / 100), anos);
+
+        let interpretacao = `Considerando inflação anual média de ${taxaInflacao}% em Moçambique.\n`;
+        interpretacao += `O valor que precisa para manter o poder de compra após ${anos} anos é:\n` +
+          `${valorCorrigido.toFixed(2)} MT\n`;
+        interpretacao += `💡 Planeje suas finanças pensando na inflação para não perder poder aquisitivo.`;
+
+        resultDiv.textContent =
+          `Valor original: ${valorOriginal.toFixed(2)} MT\n` +
+          `Tempo: ${anos} anos\n\n` +
+          interpretacao;
+      }
+      else if(op === 'fundoEmergencia') {
+        const rendaMensal = getValue('rendaMensal');
+        let mesesReserva = document.getElementById('mesesReserva').value;
+        mesesReserva = mesesReserva === '' ? 6 : parseInt(mesesReserva);
+
+        const fundoNecessario = rendaMensal * mesesReserva;
+
+        let interpretacao = `Fundo de emergência recomendado para cobrir ${mesesReserva} meses sem renda.\n`;
+        if (fundoNecessario < 50000) interpretacao += '🟢 Fundo acessível para guardar aos poucos.\n';
+        else if (fundoNecessario < 200000) interpretacao += '⚠️ Fundo significativo, importante planejamento.\n';
+        else interpretacao += '🔴 Fundo alto, avalie estratégias para acumular aos poucos.\n';
+        interpretacao += `💡 Ter fundo emergencial evita endividamento em crises.`;
+
+        resultDiv.textContent =
+          `Renda mensal: ${rendaMensal.toFixed(2)} MT\n` +
+          `Meses de reserva: ${mesesReserva}\n\n` +
+          `Fundo de emergência sugerido: ${fundoNecessario.toFixed(2)} MT\n\n` +
+          interpretacao;
+      }
+    }
+    catch(err) {
+      // já alertou em getValue, só sair
+      return;
+    }
+  });
+</script>
+
+</body>
+</html>
